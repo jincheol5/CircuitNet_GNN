@@ -10,7 +10,29 @@ class DataUtils:
     @staticmethod
     def get_base_path():
         return BASE_PATH
-    
+
+    @staticmethod
+    def get_timing_features_info(
+            data_type:Literal[
+                "nodes",
+                "net_edges",
+                "pin_positions"
+            ],
+            head:int=10
+        ):
+        if data_type in ("nodes","net_edges"):
+            dir_path=os.path.join(BASE_PATH,"timing_features","timing_features_post_route",data_type)
+        else: # pin_positions
+            dir_path=os.path.join(BASE_PATH,"timing_features",data_type)
+        npz_files=[
+            f for f in os.listdir(dir_path) 
+            if f.endswith('.npz') and os.path.isfile(os.path.join(dir_path,f))
+        ]
+        return {
+            "file_names":npz_files[:head],
+            "len_files":len(npz_files)
+        }
+
     @staticmethod
     def load_timing_features_data(
             file_name:str,
@@ -23,7 +45,10 @@ class DataUtils:
         """
         Net Delay Prediciton
         """
-        file_path=os.path.join(BASE_PATH,"timing_features",data_type,f"{file_name}.npz")
+        if data_type in ("nodes","net_edges"):
+            file_path=os.path.join(BASE_PATH,"timing_features","timing_features_post_route",data_type,f"{file_name}.npz")
+        else: # pin_positions
+            file_path=os.path.join(BASE_PATH,"timing_features",data_type,f"{file_name}.npz")
         data=np.load(file_path,allow_pickle=True)
         return data
 
