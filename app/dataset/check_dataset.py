@@ -18,7 +18,7 @@ def main(**kwargs):
             for file_name in info["file_names"]:
                 print(file_name)
             print()
-            print(f"Length of .npz files: {info["len_files"]}")
+            print(f"Length of .npz files: {info['len_files']}")
 
         case 2:
             """
