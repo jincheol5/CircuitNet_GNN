@@ -1,65 +1,64 @@
+import os
 import argparse
-import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 from utils import DataUtils
 from graph import TimingGraph
 
+BASE_PATH=os.path.join("..","data")
 def main(**kwargs):
-
-    BASE_PATH=DataUtils.get_base_path()
-
     match kwargs["app_num"]:
         case 1:
             """
-            save timing graphs
+            Save timing_features graph to PyG Data
             """
-            nodes_dir=Path(BASE_PATH)/"timing_features"/"nodes" 
-            layout_sample_names=[
+            nodes_dir=Path(BASE_PATH)/"CircuitNet-N28"/"timing_features"/"timing_features_post_route"/"nodes" 
+            sample_names=[
                 path.stem
                 for path in nodes_dir.glob("*.npz")
             ]
 
             failed_layouts=[]
-            for layout_sample_name in tqdm(layout_sample_names,desc=f"Save graph..."):
-
+            for sample_name in tqdm(sample_names,desc=f"Save graph..."):
+                graph_path=Path(BASE_PATH)/"CircuitNet_GNN"/"graph"/f"{sample_name}.pt"
+                
                 # 이미 .pt 저장되어 있으면 넘어가기
-                graph_path=Path(BASE_PATH)/"timing_features"/"graph"/f"{layout_sample_name}.pt"
                 if graph_path.exists():
                     continue
 
+                # graph 저장
                 try:
                     nodes_data=DataUtils.load_timing_features_data(
-                        file_name=layout_sample_name,
+                        file_name=sample_name,
                         data_type=f"nodes"
                     )
                     net_edges_data=DataUtils.load_timing_features_data(
-                        file_name=layout_sample_name,
+                        file_name=sample_name,
                         data_type=f"net_edges"
                     )
                     pin_positions_data=DataUtils.load_timing_features_data(
-                        file_name=layout_sample_name,
+                        file_name=sample_name,
                         data_type=f"pin_positions"
                     )
                     nodes=nodes_data["nodes"]
                     net_edges=net_edges_data["net_edges"]
                     pin_positions=pin_positions_data["pin_positions"].item()
-                    data=TimingGraph.graph_build(
-                        layout_sample_name=layout_sample_name,
+                    data=TimingGraph.build_graph(
+                        sample_name=sample_name,
                         nodes=nodes,
                         net_edges=net_edges,
                         pin_positions=pin_positions
                     )
                     DataUtils.save_PyG_Data(
-                        file_name=layout_sample_name,
+                        file_name=sample_name,
                         data=data
                     )
                 except Exception as e:
                     failed_layouts.append({
-                        "layout_sample_name":layout_sample_name,
+                        "sample_name":sample_name,
                         "error":str(e)
                     })
-                    tqdm.write(f"[ERROR] {layout_sample_name}: {e}")
+                    tqdm.write(f"[ERROR] {sample_name}: {e}")
 
             print(f"Complete to save graphs!")
             if failed_layouts:

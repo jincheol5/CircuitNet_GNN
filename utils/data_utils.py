@@ -4,7 +4,7 @@ import torch
 from typing import Literal
 from torch_geometric.data import Data
 
-BASE_PATH=os.path.join("..","data","CircuitNet-N28")
+BASE_PATH=os.path.join("..","data")
 
 class DataUtils:
     @staticmethod
@@ -21,9 +21,9 @@ class DataUtils:
             head:int=10
         ):
         if data_type in ("nodes","net_edges"):
-            dir_path=os.path.join(BASE_PATH,"timing_features","timing_features_post_route",data_type)
+            dir_path=os.path.join(BASE_PATH,"CircuitNet-N28","timing_features","timing_features_post_route",data_type)
         else: # pin_positions
-            dir_path=os.path.join(BASE_PATH,"timing_features",data_type)
+            dir_path=os.path.join(BASE_PATH,"CircuitNet-N28","timing_features",data_type)
         npz_files=[
             f for f in os.listdir(dir_path) 
             if f.endswith('.npz') and os.path.isfile(os.path.join(dir_path,f))
@@ -46,9 +46,9 @@ class DataUtils:
         Net Delay Prediciton
         """
         if data_type in ("nodes","net_edges"):
-            file_path=os.path.join(BASE_PATH,"timing_features","timing_features_post_route",data_type,f"{file_name}.npz")
+            file_path=os.path.join(BASE_PATH,"CircuitNet-N28","timing_features","timing_features_post_route",data_type,f"{file_name}.npz")
         else: # pin_positions
-            file_path=os.path.join(BASE_PATH,"timing_features",data_type,f"{file_name}.npz")
+            file_path=os.path.join(BASE_PATH,"CircuitNet-N28","timing_features",data_type,f"{file_name}.npz")
         data=np.load(file_path,allow_pickle=True)
         return data
 
@@ -57,11 +57,7 @@ class DataUtils:
             file_name:str,
             data:Data
         ):
-        """
-        """
-        file_path=os.path.join(BASE_PATH,"timing_features","graph",f"{file_name}.pt")
-        os.makedirs(
-            os.path.dirname(file_path),
-            exist_ok=True # 이미 폴더가 있어도 에러 X
-        )
+        file_name=f"{file_name}.pt"
+        file_path=os.path.join(BASE_PATH,"CircuitNet_GNN","graph",file_name)
+        os.makedirs(os.path.dirname(file_path),exist_ok=True)
         torch.save(data,file_path)
