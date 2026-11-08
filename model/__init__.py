@@ -1,1 +1,1 @@
-from .TimingGCN import *
+from .NetEmbedding import *
