@@ -1,1 +1,1 @@
-from .GAT import *
+from .TimingGCN import *

@@ -10,3 +10,5 @@ python -m app.dataset.check_dataset --app_num 2
 python -m app.dataset.check_dataset --app_num 3
 
 python -m app.dataset.check_dataset --app_num 4
+
+python -m app.dataset.check_dataset --app_num 5

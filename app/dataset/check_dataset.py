@@ -1,5 +1,6 @@
 import argparse
 import numpy as np
+import networkx as nx
 from utils import DataUtils
 
 def main(**kwargs):
@@ -136,6 +137,66 @@ def main(**kwargs):
             print(f"Has Reverse Edges: {len(reverse_edges) > 0}")
             print(f"Examples: {reverse_edges[:10]}")
 
+        case 5:
+            """
+            Check. 하나의 sample 안의 net들이 독립적인지 확인
+            """
+            net_edges_data=DataUtils.load_timing_features_data(
+                file_name=kwargs["file_name"],
+                data_type=f"net_edges"
+            )
+            net_edges=net_edges_data["net_edges"]
+
+            # Source, Destination 추출
+            src=net_edges[:,0].astype(np.int64)
+            dst=net_edges[:,1].astype(np.int64)
+
+            # 1. Source별 Sink 개수
+            unique_src,counts=np.unique(src,return_counts=True)
+            print("Total Edges: ",len(src))
+            print("Unique Sources: ",len(unique_src))
+            print("Max Sinks per Source: ",counts.max())
+            print("Min Sinks per Source: ",counts.min())
+
+            # 2. Source와 Destination 중복 여부
+            src_set=set(src)
+            dst_set=set(dst)
+            print("Source & Sink Overlap: ",len(src_set&dst_set))
+
+            # 3. Sink를 공유하는 Source가 있는지 확인
+            dst_to_src={}
+            for s,d in zip(src,dst):
+                dst_to_src.setdefault(d,set()).add(s)
+
+            shared_sinks={
+                d: sources
+                for d, sources in dst_to_src.items()
+                if len(sources) > 1
+            }
+            print("Sinks with Multiple Sources: ",len(shared_sinks))
+
+            # 4. Connected Component 분석
+            G=nx.Graph()
+            G.add_edges_from(zip(src,dst))
+            components=list(nx.connected_components(G))
+            print("Connected Components: ",len(components))
+            print("Largest Component: ",max(map(len,components)))
+
+            # 5. 각 Component에 Source가 하나씩 있는지 확인
+            multi_source_components=[
+                component
+                for component in components
+                if len(component & src_set) > 1
+            ]
+            print("Components with Multiple Sources: ",len(multi_source_components))
+
+            # 6. 최종 판정
+            is_independent = (
+                len(src_set & dst_set) == 0
+                and len(shared_sinks) == 0
+                and len(multi_source_components) == 0
+            )
+            print("Independent Star Subgraphs: ",is_independent)
 
 if __name__=="__main__":
     """
