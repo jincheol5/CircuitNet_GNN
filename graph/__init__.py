@@ -1,1 +1,1 @@
-from .timing_graph import *
+from .netlist_graph import *

@@ -1,9 +1,10 @@
 import os
 import argparse
+import numpy as np
 from pathlib import Path
 from tqdm import tqdm
-from utils import DataUtils
-from graph import TimingGraph
+from utils import DataUtils,EMPTY_SAMPLE
+from graph import NetlistGraph
 
 BASE_PATH=os.path.join("..","data")
 def main(**kwargs):
@@ -16,6 +17,13 @@ def main(**kwargs):
             sample_names=[
                 path.stem
                 for path in nodes_dir.glob("*.npz")
+            ]
+
+            # empty sample name 제외
+            empty_samples=set(EMPTY_SAMPLE)
+            sample_names=[
+                name for name in sample_names
+                if name not in empty_samples
             ]
 
             failed_layouts=[]
@@ -43,7 +51,14 @@ def main(**kwargs):
                     nodes=nodes_data["nodes"]
                     net_edges=net_edges_data["net_edges"]
                     pin_positions=pin_positions_data["pin_positions"].item()
-                    data=TimingGraph.build_graph(
+
+                    # node pin names에서 EDA escape 문자 제거 전처리
+                    nodes=np.array([
+                        str(node).replace("\\", "")
+                        for node in nodes
+                    ])
+
+                    data=NetlistGraph.build_graph(
                         sample_name=sample_name,
                         nodes=nodes,
                         net_edges=net_edges,

@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch_geometric.data import Data
 
-class TimingGraph:
+class NetlistGraph:
     @staticmethod
     def build_graph(
             sample_name:str,
@@ -25,11 +25,11 @@ class TimingGraph:
             net_edges: (E,6)
             pin_positions: dict
                 key: str
-                value: list (len=6)
+                value: list, 앞의 4개 값은 GCell 격자 인덱스 [x_min, y_min, x_max, y_max]
         Return: PyG Data
             x: [N,4]
-            edge_index: [2,2*E]
-            edge_type: [2*E,], 1=net_out, 0=net_in
+            edge_index: [2,E]
+            edge_attr: [E,1]
             edge_label: [E,4]
             graph_id: str, sample_name
         """
@@ -45,7 +45,7 @@ class TimingGraph:
             dtype=torch.float32
         )
 
-        # edge_index: [2,2*E]
+        # edge_index: [2,E]
         src=torch.tensor(
             net_edges[:,0],
             dtype=torch.long
@@ -54,36 +54,29 @@ class TimingGraph:
             net_edges[:,1],
             dtype=torch.long
         )
-        net_out_edge_index=torch.stack(
-            [src,dst],
-            dim=0
-        )
-        net_in_edge_index=torch.stack(
-            [dst,src],
-            dim=0
-        )
-        edge_index=torch.cat(
-            [net_out_edge_index,net_in_edge_index],
-            dim=1
-        )
-        edge_type=torch.cat(
-            [
-                torch.ones(net_out_edge_index.size(1),dtype=torch.long),
-                torch.zeros(net_in_edge_index.size(1),dtype=torch.long)
-            ],
-            dim=0
-        ) # net_out=1, net_in=0
+        edge_index=torch.stack([src,dst],dim=0) # net_out edge
         edge_label=torch.tensor(
             net_edges[:,2:],
             dtype=torch.float32
         ) # [E,4], net_out edge의 net_delay label
+        edge_attr=torch.linalg.vector_norm(
+            node_ft[edge_index[0]]-node_ft[edge_index[1]],
+            dim=1,
+            keepdim=True
+        )  # [E,1], 두 노드 사이의 거리 값
+
+        # src 기준 오름차순 정렬
+        perm=edge_index[0].argsort(stable=True)
+        edge_index=edge_index[:,perm]
+        edge_label=edge_label[perm]
+        edge_attr=edge_attr[perm]
 
         # set PyG Data
         graph=Data(
-            x=node_ft,
-            edge_index=edge_index,
-            edge_type=edge_type,
-            edge_label=edge_label
+            x=node_ft, # [N,4]
+            edge_index=edge_index, # [2,E]
+            edge_attr=edge_attr, # [E,1]
+            edge_label=edge_label # [E,4]
         )
         graph.graph_id=sample_name
         return graph

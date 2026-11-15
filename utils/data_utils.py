@@ -5,7 +5,7 @@ from typing import Literal
 from torch_geometric.data import Data
 
 BASE_PATH=os.path.join("..","data")
-
+os.makedirs(BASE_PATH,exist_ok=True)
 class DataUtils:
     @staticmethod
     def get_base_path():

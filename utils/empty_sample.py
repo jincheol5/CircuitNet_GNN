@@ -1,0 +1,10 @@
+EMPTY_SAMPLE=[
+    "770-RISCY-a-2-c2-u0.75-m1-p3-f0",
+    "293-RISCY-a-1-c5-u0.75-m2-p6-f0",
+    "9088-zero-riscy-a-3-c20-u0.8-m3-p6-f1",
+    "812-RISCY-a-2-c2-u0.8-m3-p3-f0",
+    "1034-RISCY-a-2-c5-u0.8-m2-p4-f0",
+    "4481-RISCY-FPU-a-1-c20-u0.85-m2-p4-f0",
+    "785-RISCY-a-2-c2-u0.75-m3-p3-f0",
+    "8284-zero-riscy-a-2-c5-u0.9-m2-p3-f1"
+]

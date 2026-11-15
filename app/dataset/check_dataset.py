@@ -44,7 +44,8 @@ def main(**kwargs):
             print(type(nodes_data))
             print(nodes_data.files) # .npz 파일에 저장된 배열들의 이름(Key)을 리스트로 반환하는 속성
             print(type(nodes_data["nodes"]))
-            print(nodes_data["nodes"][:5])
+            for node in nodes_data["nodes"][:5]:
+                print(node)
             print(f"len of nodes: {len(nodes_data['nodes'])}",end=f"\n\n")
 
             print(f"net_edges data:")
@@ -53,7 +54,9 @@ def main(**kwargs):
             print(type(net_edges_data["net_edges"]))
             net_edges=net_edges_data["net_edges"]
             print(f"net_edges shape: {net_edges.shape}")
-            print(net_edges[:5])
+            for net_edge in net_edges[:5]:
+                print(net_edge)
+            print()
             print(f"len of net_edges: {len(net_edges_data['net_edges'])}",end=f"\n\n")
 
             print(f"pin_positions data:")
@@ -63,12 +66,19 @@ def main(**kwargs):
             print(pin_positions_data["pin_positions"].shape) # 0차원 object array
             print(type(pin_positions_data["pin_positions"].item())) # dict
             position_dict=pin_positions_data["pin_positions"].item()
-            key,value=next(iter(position_dict.items()))
-            print("Key Type:",type(key))
-            print("Value Type:",type(value))
-            print(f"key ex: {list(position_dict.keys())[:5]}")
-            position_value_ex=position_dict[f"FE_OCPC10204_testmode_i/I"]
-            print(f"pin_position value ex: {position_value_ex}",end="\n\n")
+
+            if not position_dict:
+                print("pin_positions가 비어 있습니다.")
+            else:
+                key,value=next(iter(position_dict.items()))
+                print("Key Type:",type(key))
+                print("Value Type:",type(value))
+                print(f"key ex: ")
+                for position_dict_key in list(position_dict.keys())[:3]:
+                    print(position_dict_key)
+                print()
+                position_value_ex=position_dict[list(position_dict.keys())[0]]
+                print(f"pin_position value (key: {list(position_dict.keys())[0]}) ex: {position_value_ex}",end="\n\n")
 
             print(f"Analysis:")
             nodes=nodes_data["nodes"]
@@ -169,9 +179,9 @@ def main(**kwargs):
                 dst_to_src.setdefault(d,set()).add(s)
 
             shared_sinks={
-                d: sources
-                for d, sources in dst_to_src.items()
-                if len(sources) > 1
+                d:sources
+                for d,sources in dst_to_src.items()
+                if len(sources)>1
             }
             print("Sinks with Multiple Sources: ",len(shared_sinks))
 
@@ -186,15 +196,15 @@ def main(**kwargs):
             multi_source_components=[
                 component
                 for component in components
-                if len(component & src_set) > 1
+                if len(component&src_set)>1
             ]
             print("Components with Multiple Sources: ",len(multi_source_components))
 
             # 6. 최종 판정
-            is_independent = (
-                len(src_set & dst_set) == 0
-                and len(shared_sinks) == 0
-                and len(multi_source_components) == 0
+            is_independent=(
+                len(src_set&dst_set)==0
+                and len(shared_sinks)==0
+                and len(multi_source_components)==0
             )
             print("Independent Star Subgraphs: ",is_independent)
 
